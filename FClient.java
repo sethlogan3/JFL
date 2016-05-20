@@ -1,4 +1,4 @@
-package superbot;
+package jfl;
 
 import java.net.*;
 import java.lang.reflect.Method;
@@ -6,22 +6,35 @@ import java.util.*;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.*;
-import superbot.Channel.*;
+import static jfl.Character.*;
+import static jfl.Channel.*;
 
 public abstract class FClient{
-    public String client="FClient";
-    public String version="1.0";
-    public static String ticket,user;
-    private final WebSocketClient websocket;
-    //public static HashMap<Integer,Kink> kinksList=new HashMap();
-    public HashMap<String,Channel> channels=new HashMap();
-    public HashMap<String,Character> characters=new HashMap();
-    public String clientCharacter;
+    public enum Server{PUBLIC,TEST};
+    
+    public final String CLIENT_DEFAULT="FClient";
+    public final String VERSION_DEFAULT="1.0";
+    public final String TEST_URL="ws://chat.f-list.net:8722";
+    public final String PUBLIC_URL="ws://chat.f-list.net:9722";
+    
+    private String client,version;
+    private static String ticket,user;
+    private WebSocketClient websocket;
+    private String clientCharacter;
+    
+    private int serverConnections;
     
     //Generate new FClient
-    public FClient(String server) throws Exception {  
-        websocket=generateWebsocket(server);
-        updateKinksList();
+    public FClient(String clientName,String clientVersion) throws Exception {
+        client=clientName;
+        version=clientVersion;
+        Kink.updateKinksList();
+    }
+
+    public FClient() throws Exception {
+        client=CLIENT_DEFAULT;
+        version=VERSION_DEFAULT;
+        Kink.updateKinksList();
     }
 
     private WebSocketClient generateWebsocket(String uri) throws URISyntaxException {
@@ -63,46 +76,31 @@ public abstract class FClient{
         m.invoke(FClient.this,param);    
     }
     
-    public void login(String username,String character,String password) throws Exception {
+    public void login(String username,String character,String password,Server server) throws Exception {
         user=username;
         clientCharacter=character;
-        ticket=EndpointUtil.getTicket(user,password);
+        ticket=EndpointUtil.getTicket(username,password);
+        
+        if (server==Server.PUBLIC)
+            websocket=generateWebsocket(PUBLIC_URL);
+        else
+            websocket=generateWebsocket(TEST_URL);
+        
         websocket.connect();
     }
 
+    public void login(String username,String character,String password) throws Exception {
+        login(username,character,password,Server.PUBLIC);
+    }
+    
     public void setClientName(String name) {
         client=name;
     }
 
-    public Character getCharacter(String name) {
-        if (!characters.containsKey(name)) 
-            characters.put(name,new Character(name));     
-         
-        return characters.get(name);
-    }
-    
     public void setClientVersion(String versionName) {
         version=versionName;
     }
 
-    public final void updateKinksList() throws Exception {
-        JSONObject kinkInfo=EndpointUtil.postRequest(EndpointUtil.getApiUrl("kink-list"),"").getJSONObject("kinks");
-        Iterator keys = kinkInfo.keys();
-
-        while(keys.hasNext()) {
-            JSONObject currentGroup=kinkInfo.getJSONObject((String)keys.next());
-            String category=currentGroup.getString("group");
-            JSONArray items=currentGroup.getJSONArray("items");
-
-            for (int i=0; i<items.length(); i++) {
-                JSONObject currentKink=items.getJSONObject(i);
-                int id=currentKink.getInt("kink_id");
-                //kinksList.put(id,new Kink(currentKink.getString("name"),id,category)); 
-                Character.kinksList.add(new Kink(currentKink.getString("name"),id,category)); 
-            }
-        }
-    } 
-    
     private void send(String message) {
         System.out.println(">> "+message);
         websocket.send(message);
@@ -117,99 +115,275 @@ public abstract class FClient{
         send(command+" "+info.toString());
     }
 
+    public void chatopsRecieved(ArrayList<String> ops) {}
+    private void gotADL(JSONObject param) {
+        JSONArray ops=param.getJSONArray("ops");
+        chatopsRecieved(FUtil.jsonToArrayList(ops));
+    }
     
-    public void onLogin() throws Exception{};
+    public void characterPromotedToChatOp(Character character) {} 
+    private void gotAOP(JSONObject param) throws Exception {
+        String name=param.getString("character");
+        characterPromotedToChatOp(getCharacter(name));
+    }
+
+    public void broadcastRecieved(String message) {}
+    private void gotBRO(JSONObject param) {
+        broadcastRecieved(param.getString("message"));
+    }
+    
+    public void channelDescriptionChanged(Channel channel,String description) {}
+    private void gotCDS(JSONObject param) {
+        Channel channel=getChannel(param.getString("channel"));
+        String description=param.getString("description");
+        channel.setDescription(description);
+        channelDescriptionChanged(channel,description);
+    }
+    
+    public void publicChannelsRecieved(ArrayList<Channel> channels) {}
+    private void gotCHA(JSONObject param) {
+        ArrayList<Channel> returnChannels=new ArrayList();
+        JSONArray channelsInfo=param.getJSONArray("channels");
+        
+        for (int i=0; i<channelsInfo.length(); i++) {
+            JSONObject current=channelsInfo.getJSONObject(i);
+            String name=current.getString("name");
+            String mode=current.getString("mode");
+            int numberOfOccupants=current.getInt("characters");
+            
+            Channel channel=getChannel(name);
+            
+            if (channel==null) {
+                channel=new Channel(name,name,mode,numberOfOccupants);
+                getChannels().add(channel); 
+            }
+            else {
+                channel.setMode(mode);
+                channel.setNumberOfOccupants(numberOfOccupants);
+            }
+            
+            returnChannels.add(channel);
+        }  
+        
+        publicChannelsRecieved(returnChannels);
+    }
+    
+    public void inviteRecieved(Character sender,Channel channel) throws Exception {}
+    private void gotCIU(JSONObject param) throws Exception {
+        String senderName=param.getString("sender");
+        String channelName=param.getString("name");
+        String title=param.getString("title");
+        Channel channel=getChannel(channelName);
+        
+        if (channel==null) {
+            channel=new Channel(channelName,title);
+            getChannels().add(channel);
+        }
+        else
+            channel.setTitle(title);
+        
+        inviteRecieved(getCharacter(senderName),channel);
+    }
+    
+    public void characterBanned(Character operator,Channel channel,Character bannedCharacter) throws Exception{}
+    private void gotCBU(JSONObject param) throws Exception{
+        Character operator=getCharacter(param.getString("operator"));
+        Character bannedCharacter=getCharacter(param.getString("character"));
+        Channel channel=getChannel(param.getString("channel"));
+        
+        characterBanned(operator,channel,bannedCharacter);
+    }
+ 
+    public void characterKicked(Character operator,Channel channel,Character kickedCharacter) throws Exception{}
+    private void gotCKU(JSONObject param) throws Exception{
+        Character operator=getCharacter(param.getString("operator"));
+        Character kickedCharacter=getCharacter(param.getString("character"));
+        Channel channel=getChannel(param.getString("channel"));
+        
+        characterKicked(operator,channel,kickedCharacter);
+    }
+    
+    public void characterPromotedToChanop(Character chanop, Channel channel) throws Exception {}
+    private void gotCOA(JSONObject param) throws Exception {
+        Character chanop=getCharacter(param.getString("character"));
+        Channel channel=getChannel(param.getString("channel"));
+        channel.addOp(chanop);
+        characterPromotedToChanop(chanop,channel);
+    }
+ 
+    public void channelOpsRecieved(Channel channel,ArrayList<Character> opsList) throws Exception{}
+    private void gotCOL(JSONObject param) throws Exception {
+        ArrayList<Character> opsList=new ArrayList();
+        Channel channel=getChannel(param.getString("channel"));
+        JSONArray ops=param.getJSONArray("oplist");
+
+        for (int i=0; i<ops.length(); i++) {
+           Character op=getCharacter(ops.getString(i)); 
+           opsList.add(op);
+        }
+        
+        channel.setOps(opsList);
+        channel.setOwner(opsList.get(0));
+        channelOpsRecieved(channel,opsList);
+    }
+ 
+    public void connectionCountRecieved(int connections) {}
+    private void gotCON(JSONObject param) {
+        int connections=Integer.valueOf(param.getString("count"));
+        connectionCountRecieved(connections);
+    }
+    
+    public void chanopDemoted(Character demotedCharacter,Channel channel) throws Exception {}
+    private void gotCOR(JSONObject param) throws Exception {
+        Character demotedCharacter=getCharacter(param.getString("character"));
+        Channel channel=getChannel(param.getString("channel"));
+        channel.removeOp(demotedCharacter);
+        characterPromotedToChanop(demotedCharacter,channel);
+    }
+    
+    public void channelOwnerChanged() throws Exception {}
+    private void gotCSO(JSONObject param) throws Exception {
+        Character newOwner=getCharacter(param.getString("character"));
+        Channel channel=getChannel(param.getString("channel"));
+        channel.setOwner(newOwner);
+        characterPromotedToChanop(newOwner,channel);
+    }  
+    
+    public void characterTemporarilyBanned(Character operator,Channel channel,Character bannedCharacter, int time) throws Exception{} 
+    private void gotCTU(JSONObject param) throws Exception {
+        Character operator=getCharacter(param.getString("operator"));
+        Character bannedCharacter=getCharacter(param.getString("character"));
+        Channel channel=getChannel(param.getString("channel"));
+        characterTemporarilyBanned(operator,channel,bannedCharacter,param.getInt("length"));
+    }
+        
+    public void chatopDemoted(Character character) throws Exception {}
+    private void gotDOP(JSONObject param) throws Exception {
+        Character demotedCharacter=getCharacter(param.getString("character"));
+        chatopDemoted(demotedCharacter);
+    }
+    
+    public void errorRecieved(String error, int number) {}
+    private void gotERR(JSONObject param) {
+        errorRecieved(param.getString("message"),param.getInt("number"));
+    }
+    
+    public void helloRecieved(String message) {}
+    private void gotHLO(JSONObject param) {
+        helloRecieved(param.getString("message"));
+    }
+    
+    public void channelDataRecieved(Channel channel,ArrayList<Character> occupants,String mode) {}
+    private void gotICH(JSONObject param) throws Exception {
+        ArrayList<Character> occupants=new ArrayList();
+
+        Channel channel=getChannel(param.getString("channel")); 
+        channel.clearOccupants();
+        
+        String mode=param.getString("mode");
+        channel.setMode(mode);        
+
+        JSONArray characterArray=param.getJSONArray("users");
+        
+        for (int i=0; i<characterArray.length();i++) {
+            String name=((JSONObject)characterArray.get(i)).getString("identity");
+            Character character=getCharacter(name);
+            channel.addOccupant(character); 
+        }
+
+        channelDataRecieved(channel,occupants,mode);
+    }
+    
+    public void onLogin() throws Exception{}
     private void gotIDN(JSONObject unused) throws Exception {
         onLogin();
     }
-    
-    private void gotNLN(JSONObject param) throws Exception {
-        String name=param.getString("identity");
-        String genderString=param.getString("gender").toLowerCase();
-        getCharacter(name).setGender(genderString);
-    }
-    
-    public void pingRecieved() {};
-    private void gotPIN(JSONObject unused) throws JSONException {
-        ping();
-        pingRecieved();
-    }
-    
-    public void characterJoinedRoom(Character character,Channel channel) {};
-    private void gotJCH(JSONObject param) throws JSONException {
+
+    public void characterJoinedChannel(Character character,Channel channel) {}
+    private void gotJCH(JSONObject param) throws Exception {
         String characterName=param.getJSONObject("character").getString("identity");
-        Character character=characters.get(characterName);
+        Character character=getCharacter(characterName);
         
         String channelName=param.getString("channel");
         Channel channel;
 
         if (characterName.equals(clientCharacter)) {
-            channels.put(channelName,new Channel(channelName,param.getString("title")));
-            channel=channels.get(channelName);
+            getChannels().add(new Channel(channelName,param.getString("title")));
+            channel=getChannel(channelName);
             
             if (channelName.substring(0,3).equals("ADH"))
-                channel.setType(ChannelType.PRIVATE);
+                channel.setType("private");
             else
-                channel.setType(ChannelType.PUBLIC);
+                channel.setType("public");
         } 
         else
-            channel=channels.get(channelName);
+            channel=getChannel(channelName);
 
-        characterJoinedRoom(character,channel);
+        channel.addOccupant(character);
+        characterJoinedChannel(character,channel);
     }
 
+    public void characterLeftChannel(Channel channel,Character character) {}
+    private void gotLCH(JSONObject param) throws Exception {
+        String characterName=param.getString("character");
+        Character character=getCharacter(characterName);
+        
+        String channelName=param.getString("channel");
+        Channel channel=getChannel(channelName);
+        
+        characterLeftChannel(channel,character);    
+        
+        if (characterName.equals(clientCharacter)) 
+            removeChannel(channelName);
+        else
+            channel.removeOccupant(character);
+    }
     
+    public void characterConnected(Character character) {}
+    private void gotNLN(JSONObject param) throws Exception {        
+        Character character=getCharacter(param.getString("identity"));
+        character.setGender(param.getString("gender").toLowerCase());
+        character.setStatus(param.getString("status"));       
+        character.setOnline();   
+        
+        serverConnections++;
+        characterConnected(character);
+    }
+
+    public void channelMessageRecieved(Character sender, String message, Channel channel) throws Exception {}
+    private void gotMSG(JSONObject param) throws Exception {
+        Character sender=getCharacter(param.getString("character"));
+        Channel channel=getChannel(param.getString("channel"));
+        String message=param.getString("message");
+        
+        channel.addMessage(new Message(sender,message));
+        channelMessageRecieved(sender,message,channel);
+    }
+    
+    public void privateMessageRecieved(Character sender, String message) throws Exception {}
+    private void gotPRI(JSONObject param) throws Exception {
+        Character sender=getCharacter(param.getString("character"));
+        String message=param.getString("message");
+               
+        sender.addMessage(new Message(sender,message));
+        privateMessageRecieved(sender,message);
+    }
+        
+    public void onPing() {}
+    private void gotPIN(JSONObject unused) throws JSONException {
+        ping();
+        onPing();
+    }
+    
+
+    public void roomModeChanged(Channel channel,String mode) {} 
     private void gotRMO(JSONObject param) throws JSONException {
-        Channel channel=channels.get(param.getString("channel"));
+        Channel channel=getChannel(param.getString("channel"));
         String mode=param.getString("mode");
         channel.setMode(mode);
         roomModeChanged(channel,mode);
     }
-    public void roomModeChanged(Channel channel,String mode) {};
-    
-    public void channelOpsRecieved(JSONObject param) {};
-    private void gotCOL(JSONObject param) throws JSONException {
-        Channel channel=channels.get(param.getString("channel"));
-        JSONArray ops=param.getJSONArray("oplist");
-        channel.setOwner(ops.getString(0));
-        
-        for (int i=0; i<ops.length();i++)             
-            channel.addOp(ops.getString(i));
-        
-        channelOpsRecieved(param);
-    }
 
-    public void channelDataRecieved(JSONObject param) {};
-    public void gotICH(JSONObject param) throws JSONException {
-        Channel channel=channels.get(param.getString("channel"));
-        ArrayList<String> users=new ArrayList<>();
-        JSONArray usersData=param.getJSONArray("users");
-        
-        for (int i=0; i<usersData.length();i++) 
-            users.add(((JSONObject)usersData.get(i)).getString("identity"));
-
-        channel.setOccupants(users);
-        channel.setMode(param.getString("mode"));
-        
-        channelDataRecieved(param);
-    }
-
-    private void gotCDS(JSONObject param) {
-        Channel channel=channels.get(param.getString("channel"));
-        channel.setDescription(param.getString("description"));
-        System.out.println("*"+channels.get(param.getString("channel")));
-    }
-    
-    private void gotLCH(JSONObject param) {
-        String character=param.getString("character");
-        String channelName=param.getString("channel");
-        
-        if (character.equals(clientCharacter)) 
-            channels.remove(channelName);
-        else
-            channels.get(channelName).removeOccupant(character);
-    }
-    
     //This command requires chat op or higher. Request a character's account be banned from the server.
     public void globalBan(String character) throws JSONException {
         sendCommand("ACB","character",character);
@@ -306,13 +480,24 @@ public abstract class FClient{
     }
     
     //Search for characters fitting the user's selections. Kinks is required, all other parameters are optional.
-    public void searchCharacters(String kinks, String genders, String orientations, String languages, String furryprefs, String roles) throws Exception {
-        //Later implementation
+    public void searchCharacters(Search search) throws Exception {
+        send("FKS "+search);
     }
 
+    public void searchCharacters(Integer... kinks) throws Exception {
+        send("FKS "+new Search(kinks));
+    }
+
+    public void searchCharacters(String... kinks) throws Exception {
+        send("FKS "+new Search(kinks));
+    }
+        
+    public void searchCharacters(Kink... kinks) throws Exception {
+        send("FKS "+new Search(kinks));
+    }
+        
     //This command is used to identify with the server.
     public void identify(String account,String character,String ticket, String client, String cversion, String method) throws Exception {
-        
         sendCommand("IDN","account",account,"character",character,"ticket",ticket,"client",client,"cversion",cversion,"method",method);
     }
 
@@ -322,8 +507,12 @@ public abstract class FClient{
     }
 
     //Send a channel join request.
-    public void joinChannel(String channel) throws JSONException {
-        sendCommand("JCH","channel",channel);
+    public void joinChannel(String channelName) throws JSONException {
+        sendCommand("JCH","channel",channelName);
+    }
+
+    public void joinChannel(Channel channel) throws JSONException {
+        sendCommand("JCH","channel",channel.getName());
     }
     
     //This command requires chat op or higher. Request a character be kicked from the server.
@@ -358,13 +547,15 @@ public abstract class FClient{
 
     //Sends a ping response to the server. Timeout detection, and activity to keep the connection alive.
     public void ping() {
-        send("PIN");
-        
+        send("PIN"); 
     }   
 
     //Sends a private message to another user.
-    public void sendPrivateMessage(String recipient,String message) throws JSONException {
-        sendCommand("PRI","recipient",recipient,"message",message);
+    public void sendPrivateMessage(String recipient,String message) throws Exception, FListException {
+        if (getCharacter(recipient).isOnline()) {    
+            sendCommand("PRI","recipient",recipient,"message",message);
+        }else
+            throw new FListException("Character offline.");
     }
         
     //Requests some of the profile tags on a character, such as Top/Bottom position and Language Preference.

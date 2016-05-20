@@ -1,27 +1,30 @@
-package superbot;
+package jfl;
 
 import java.util.*;
-import java.util.Map.*;
 import org.json.JSONObject;
+import static jfl.Character.*;
+import static jfl.Channel.*;
+import static jfl.Kink.*;
 
 public class Superbot extends FClient{
-    public Superbot(String server) throws Exception {
-        super(server);
+    public Superbot(String clientName,String clientVersion) throws Exception {
+        super(clientName,clientVersion);
     }
 
-    @Override public void onLogin() throws Exception {
+    @Override public void onLogin() throws Exception{
         joinChannel("ADH-491cbcdbbbe8039e87cb");
-        HashMap<Kink,String> kinks=getCharacter("Sid the Kid").getKinks();
-        
-        System.out.println(kinks.get(kinksList.get(160)));
+        Search search=new Search(getKinkByName("Males"));
+        search.addGenders(Gender.MALE,Gender.FEMALE).addLanguages(Language.ENGLISH);
+        searchCharacters(search);
     }
-                
+
     public static void main(String[] args) throws Exception {
         JSONObject loginInfo=FUtil.loadJSON("data/LoginInfo.json");  
-
-        Superbot superbot=new Superbot(loginInfo.getString("server"));
+        Superbot superbot=new Superbot(loginInfo.getString("client name"),
+                                       loginInfo.getString("client version"));
         superbot.login(loginInfo.getString("username"),
-                loginInfo.getString("character"),
-                loginInfo.getString("password"));
+                       loginInfo.getString("character"),
+                       loginInfo.getString("password"),
+                       Server.TEST);
     }
 }

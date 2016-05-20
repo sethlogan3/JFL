@@ -1,4 +1,4 @@
-package superbot;
+package jfl;
 
 import java.io.*;
 import java.net.URL;

@@ -1,9 +1,7 @@
-package superbot;
+package jfl;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Scanner;
+import java.util.*;
 import org.json.*;
 
 public class FUtil {
@@ -27,6 +25,33 @@ public class FUtil {
         return new JSONObject(content);
     }
     
+    public static ArrayList<String> jsonToArrayList(JSONArray array) {
+        ArrayList<String> arrayList=new ArrayList();
+        
+        for (int i=0; i<array.length(); i++) 
+            arrayList.add(array.getString(i));
+        
+        return arrayList;     
+    }
+ 
+    public static JSONArray arrayListToJSON(ArrayList<String> array) {
+        JSONArray jsonArray=new JSONArray();
+
+        for (String str:array) 
+            jsonArray.put(str);
+        
+        return jsonArray;
+    }
+    
+    public static JSONArray arrayToJSON(String[] array) {
+        JSONArray jsonArray=new JSONArray();
+
+        for (String str:array) 
+            jsonArray.put(str);
+        
+        return jsonArray;
+    }
+    
     public static HashMap parseJSONObject(JSONObject object) {
         String key;
         HashMap hashMap=new HashMap();
@@ -39,6 +64,4 @@ public class FUtil {
         
         return hashMap;
     }
-    
-
 }
