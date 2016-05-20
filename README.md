@@ -24,7 +24,7 @@ public class Bot extends FClient {
     public static void main(String[] args) throws Exception {
         JSONObject loginInfo=FUtil.loadJSON("data/LoginInfo.json");  
         Bot myBot=new Bot(loginInfo.getString("client name"),
-                               loginInfo.getString("client version"));
+                          loginInfo.getString("client version"));
         myBot.login(loginInfo.getString("username"),
                     loginInfo.getString("character"),
                     loginInfo.getString("password"));
@@ -34,8 +34,8 @@ public class Bot extends FClient {
 
 ##Features 
 
-###Testing Features
-* Easily switch between the public server and development server without needing to know their URLs or ports
+###Testing 
+* Easily switch between the operating on the public server and development server without needing to know their URLs or ports
 
 ###API access
 * Handles all POST requests for API endpoints
@@ -51,5 +51,9 @@ public class Bot extends FClient {
 
 ###F-chat data tracking
 * Automatically tracks and logs PMs and channel messages
-* Automatically tracks data for all characters that enter f-chat, as well as any character that the user specifies, including gender, status, status messages, and any character data requested from the API
-* Automatically tracks data for all channels that the client enters, including names/titles, chanops, settings, and the characters occupying each room
+* Automatically tracks data for all characters that enter f-chat (as well as any character that the user specifies) including gender, status, status message, and any character data requested from the API
+* Automatically tracks data for all channels that the client enters, including names/titles, chanops, channel settings, and the characters occupying each room
+
+
+##Additional Resources
+[Are you a Ruby developer? LibFchat by Jippen Faddoul may fit your needs](https://github.com/rgooler/libfchat-ruby)
