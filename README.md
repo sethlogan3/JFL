@@ -1,12 +1,13 @@
 # JFL - Java Flist Library
 
 ## Overview
+*Note: JFL is still in development as of May 2016. Code will remain incomplete and will likely contain errors until this header is removed.*
 
-JFL is a Java library for the online roleplaying website f-list.net, offering features for easy implementation of clients and bots for F-chat, and general access of API endpoint data.
+JFL is a third-party Java library for the online roleplaying website f-list.net, offering features for easy implementation of clients and bots for F-chat, and general access of API endpoint data.
 
 ##Code Example
 
-The following code is a simple implementation of the FClient class which reads a JSON file containing the user’s login information, logs into F-chat, and joins a specified private channel when login is successful.
+The following code is a simple implementation of the FClient class, which reads a JSON file containing the user’s login information, logs into F-chat, and joins the specified private channel when login is successful.
 
 ```java
 package jfl;
@@ -35,12 +36,12 @@ public class Bot extends FClient {
 ##Features 
 
 ###Testing 
-* Easily switch between the operating on the public server and development server without needing to know their URLs or ports
+* User can easily switch between operating on the public server and development server without needing to know their respective URLs or ports
 
 ###API access
 * Handles all POST requests for API endpoints
  * Automatically acquires f-chat tickets
- * User can invoke methods for acquiring character data, such as gender and kinks
+ * User can invoke methods for acquiring any needed character data, such as gender and kinks
 
 ###F-chat communication
 * Handles all websocket communication 
@@ -50,9 +51,9 @@ public class Bot extends FClient {
 
 
 ###F-chat data tracking
-* Automatically tracks and logs PMs and channel messages
-* Automatically tracks data for all characters that enter f-chat (as well as any character that the user specifies) including gender, status, status message, and any character data requested from the API
-* Automatically tracks data for all channels that the client enters, including names/titles, chanops, channel settings, and the characters occupying each room
+* Tracks and logs PMs and channel messages
+* Tracks data for all characters that enter f-chat (as well as any character that the user specifies) including gender, status, status message, and any character data pulled from searches or requested from the API
+* Tracks data for all channels that the client enters, including names/titles, chanops, channel settings, and the characters occupying each room
 
 
 ##Additional Resources
@@ -67,3 +68,6 @@ public class Bot extends FClient {
 [F-chat client and bot rules](https://wiki.f-list.net/F-Chat_Protocol#Guidelines)
 
 [Are you a Ruby developer? Check out LibFchat by Jippen Faddoul](https://github.com/rgooler/libfchat-ruby)
+
+##Contact
+Contact Seth Logan through an f-list note to his character found [here](https://www.f-list.net/c/slogan/)
