@@ -44,7 +44,7 @@ public class Bot extends FClient {
 
 ###F-chat communication
 * Handles all websocket communication 
-* Handles client-server JSON commands and formatting 
+* Handles client-server JSON commands and formatting. Every command has a corresponding method.
  * User can implement methods that are called for incoming server commands
  * User can invoke methods for any outgoing client commands
 
@@ -56,4 +56,9 @@ public class Bot extends FClient {
 
 
 ##Additional Resources
-[Are you a Ruby developer? LibFchat by Jippen Faddoul may fit your needs](https://github.com/rgooler/libfchat-ruby)
+[F-chat server commands](https://wiki.f-list.net/F-Chat_Server_Commands)
+[F-chat client commands](https://wiki.f-list.net/F-Chat_Client_Commands)
+[Error code reference](https://wiki.f-list.net/F-Chat_Error_Codes)
+[F-chat development basics](https://wiki.f-list.net/F-Chat_Protocol)
+[F-chat client and bot rules](https://wiki.f-list.net/F-Chat_Protocol#Guidelines)
+[Are you a Ruby developer? Check out LibFchat by Jippen Faddoul](https://github.com/rgooler/libfchat-ruby)
