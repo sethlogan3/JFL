@@ -34,16 +34,18 @@ public class Bot extends FClient {
 
 ##Features 
 
-###Communication
+###API access
+* Handles all POST requests for API endpoints
+ * User can invoke methods for acquiring character data, such as gender and kinks
+
+###F-chat communication
 * Handles all websocket communication 
 * Handles client-server JSON commands and formatting 
- * Implement methods for any incoming server commands
- * Invoke methods for any outgoing client commands
+ * User can implement methods for any incoming server commands
+ * User can invoke methods for any outgoing client commands
+ * Automatically acquires f-chat tickets
 
-* Handles all POST requests for API endpoints
- * Automatically acquires ticket
- * Fetches character data, such as gender and kinks
-
-* Automatically logs private and channel messages
-* Keeps track of channel and character data through OOP
-* Search for specific kinks by name or ID, find online users who match specific kinks, or list the kinks of a specific character
+###F-chat data tracking
+* Automatically logs PMs and channel messages
+* Automatically tracks data for all characters that enter f-chat, as well as any character that the user specifies 
+* Automatically tracks data for all channels that the client enters, including their names/titles, chanops, settings, and the characters occupying each room
