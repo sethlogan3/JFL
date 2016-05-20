@@ -6,7 +6,7 @@ JFL is a Java library for the sexual roleplaying website f-list.net, offering fe
 
 ##Code Example
 
-The following code is a simple implementation of the FClient class which reads a JSON file of the user’s login information, logs into F-chat, and joins a specified private channel.
+The following code is a simple implementation of the FClient class which reads a JSON file containing the user’s login information, logs into F-chat, and joins a specified private channel.
 
 ```java
 package jfl;
@@ -31,3 +31,8 @@ public class Bot extends FClient {
     }
 }
 ```
+
+##Features 
+*Handles all websocket communication 
+*Handles all client-server JSON command formatting 
+*Automatically logs private and channel messages
