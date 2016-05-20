@@ -2,7 +2,7 @@
 
 ## Overview
 
-JFL is a Java library for the sexual roleplaying website f-list.net, offering features for easy implementation of clients and bots for F-chat, and general access of API endpoint data.
+JFL is a Java library for the online roleplaying website f-list.net, offering features for easy implementation of clients and bots for F-chat, and general access of API endpoint data.
 
 ##Code Example
 
@@ -65,4 +65,5 @@ public class Bot extends FClient {
 [F-chat development basics](https://wiki.f-list.net/F-Chat_Protocol)
 
 [F-chat client and bot rules](https://wiki.f-list.net/F-Chat_Protocol#Guidelines)
+
 [Are you a Ruby developer? Check out LibFchat by Jippen Faddoul](https://github.com/rgooler/libfchat-ruby)
