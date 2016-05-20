@@ -36,6 +36,7 @@ public class Bot extends FClient {
 
 ###API access
 * Handles all POST requests for API endpoints
+ * Automatically acquires f-chat tickets
  * User can invoke methods for acquiring character data, such as gender and kinks
 
 ###F-chat communication
@@ -43,9 +44,9 @@ public class Bot extends FClient {
 * Handles client-server JSON commands and formatting 
  * User can implement methods for any incoming server commands
  * User can invoke methods for any outgoing client commands
- * Automatically acquires f-chat tickets
+
 
 ###F-chat data tracking
-* Automatically logs PMs and channel messages
-* Automatically tracks data for all characters that enter f-chat, as well as any character that the user specifies 
-* Automatically tracks data for all channels that the client enters, including their names/titles, chanops, settings, and the characters occupying each room
+* Automatically tracks and logs PMs and channel messages
+* Automatically tracks data for all characters that enter f-chat, as well as any character that the user specifies, including gender, status, status messages, and any character data requested from the API
+* Automatically tracks data for all channels that the client enters, including names/titles, chanops, settings, and the characters occupying each room
