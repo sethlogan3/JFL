@@ -23,7 +23,7 @@ public class Bot extends FClient {
 
     public static void main(String[] args) throws Exception {
         JSONObject loginInfo=FUtil.loadJSON("data/LoginInfo.json");  
-        Bot myBot=new Superbot(loginInfo.getString("client name"),
+        Bot myBot=new Bot(loginInfo.getString("client name"),
                                loginInfo.getString("client version"));
         myBot.login(loginInfo.getString("username"),
                     loginInfo.getString("character"),
@@ -33,6 +33,6 @@ public class Bot extends FClient {
 ```
 
 ##Features 
-*Handles all websocket communication 
-*Handles all client-server JSON command formatting 
-*Automatically logs private and channel messages
+* Handles all websocket communication 
+* Handles all client-server JSON command formatting 
+* Automatically logs private and channel messages
