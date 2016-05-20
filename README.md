@@ -65,5 +65,4 @@ public class Bot extends FClient {
 [F-chat development basics](https://wiki.f-list.net/F-Chat_Protocol)
 
 [F-chat client and bot rules](https://wiki.f-list.net/F-Chat_Protocol#Guidelines)
-
 [Are you a Ruby developer? Check out LibFchat by Jippen Faddoul](https://github.com/rgooler/libfchat-ruby)
