@@ -33,6 +33,17 @@ public class Bot extends FClient {
 ```
 
 ##Features 
+
+###Communication
 * Handles all websocket communication 
-* Handles all client-server JSON command formatting 
+* Handles client-server JSON commands and formatting 
+** Implement methods for any incoming server commands
+** Invoke methods for any outgoing client commands
+
+* Handles all POST requests for API endpoints
+** Automatically acquires ticket
+** Fetches character data, such as gender and kinks
+
 * Automatically logs private and channel messages
+* Keeps track of channel and character data through OOP
+* Search for specific kinks by name or ID, find online users who match specific kinks, or list the kinks of a specific character
