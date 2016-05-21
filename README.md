@@ -10,28 +10,21 @@ JFL is a third-party Java library for the online roleplaying website f-list.net,
 The following code is a simple implementation of the FClient class, which reads a JSON file containing the user’s login information, logs into F-chat, and joins the specified private channel when login is successful.
 
 ```java
-package jfl;
-import org.json.JSONObject;
-
 public class Bot extends FClient {
-    //Constructor that calls FClient’s constructor
+    //Constructor calls super to access parent constructor
     public Bot(String clientName,String clientVersion) throws Exception {
         super(clientName,clientVersion);
     }
 
-    //Gets called by by the client it received an IDN response command from the server
+    //Gets called by the client when it received an IDN response command from the server
     @Override public void onLogin() throws Exception {
         joinChannel("ADH-491cbcdbbbe8039e87cb"); //Joins a channel (takes one parameter, the name of the room)
     }
 
     //Main method that creates an instance of the Bot class and logs in
     public static void main(String[] args) throws Exception {
-        JSONObject loginInfo=FUtil.loadJSON("data/LoginInfo.json"); //Loads a JSON file with all login information (optional)
-        Bot myBot=new Bot(loginInfo.getString("client name"), 
-                          loginInfo.getString("client version")); //Creates a bot (FClient) object
-        myBot.login(loginInfo.getString("username"),
-                    loginInfo.getString("character"),
-                    loginInfo.getString("password")); //Logs in
+        Bot myBot=new Bot(“client_name”,”version_number”); //Creates a bot (FClient) object
+        myBot.login(“username”,”character_name”,”password”); //Logs in
     }
 }
 ```
