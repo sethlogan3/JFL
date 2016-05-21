@@ -49,7 +49,7 @@ public class Bot extends FClient {
 ####F-chat data tracking
 * Tracks and logs PMs and channel messages
 * Tracks data for all characters that enter f-chat (as well as any character that the user specifies) including gender, status, status message, and any character data pulled from searches or requested from the API
-* Tracks data for all channels that the client enters, including names/titles, chanops, channel settings, and the characters occupying each room
+* Tracks data for all channels that the client enters, including names/titles, chanops, channel settings, and a list of characters occupying each room
 
 
 ##Additional Resources
