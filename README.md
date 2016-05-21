@@ -3,7 +3,7 @@
 ## Overview
 *Note: JFL is still in development as of May 2016. Code will remain incomplete and will likely contain errors until this header is removed.*
 
-JFL is a third-party Java library for the online roleplaying website f-list.net, offering features for easy implementation of clients and bots for F-chat, and general access of API endpoint data.
+JFL is an open source third-party Java library for the online roleplaying website f-list.net, offering features for easy implementation of clients and bots for F-chat, and general access of API endpoint data.
 
 ##Code Example
 
@@ -18,7 +18,7 @@ public class Bot extends FClient {
 
     //Gets called by the client when it received an IDN response command from the server
     @Override public void onLogin() throws Exception {
-        joinChannel("ADH-491cbcdbbbe8039e87cb"); //Joins a channel (takes one parameter, the name of the room)
+        joinChannel("ADH-491cbcdbbbe8039e87cb"); //Joins the specified channel
     }
 
     //Main method that creates an instance of the Bot class and logs in
@@ -31,22 +31,22 @@ public class Bot extends FClient {
 
 ##Features 
 
-###Testing 
+####Testing 
 * User can easily switch between operating on the public server and development server without needing to know their respective URLs or ports
 
-###API access
+####API access
 * Handles all POST requests for API endpoints
  * Automatically acquires f-chat tickets
  * User can invoke methods for acquiring any needed character data, such as gender and kinks
 
-###F-chat communication
+####F-chat communication
 * Handles all websocket communication 
 * Handles client-server JSON commands and formatting. Every command has a corresponding method.
  * User can implement methods that are called for incoming server commands
  * User can invoke methods for any outgoing client commands
 
 
-###F-chat data tracking
+####F-chat data tracking
 * Tracks and logs PMs and channel messages
 * Tracks data for all characters that enter f-chat (as well as any character that the user specifies) including gender, status, status message, and any character data pulled from searches or requested from the API
 * Tracks data for all channels that the client enters, including names/titles, chanops, channel settings, and the characters occupying each room
