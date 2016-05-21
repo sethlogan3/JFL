@@ -14,21 +14,24 @@ package jfl;
 import org.json.JSONObject;
 
 public class Bot extends FClient {
+    //Constructor that calls FClient’s constructor
     public Bot(String clientName,String clientVersion) throws Exception {
         super(clientName,clientVersion);
     }
 
+    //Gets called by by the client it received an IDN response command from the server
     @Override public void onLogin() throws Exception {
-        joinChannel("ADH-491cbcdbbbe8039e87cb");
+        joinChannel("ADH-491cbcdbbbe8039e87cb"); //Joins a channel (takes one parameter, the name of the room)
     }
 
+    //Main method that creates an instance of the Bot class and logs in
     public static void main(String[] args) throws Exception {
-        JSONObject loginInfo=FUtil.loadJSON("data/LoginInfo.json");  
-        Bot myBot=new Bot(loginInfo.getString("client name"),
-                          loginInfo.getString("client version"));
+        JSONObject loginInfo=FUtil.loadJSON("data/LoginInfo.json"); //Loads a JSON file with all login information (optional)
+        Bot myBot=new Bot(loginInfo.getString("client name"), 
+                          loginInfo.getString("client version")); //Creates a bot (FClient) object
         myBot.login(loginInfo.getString("username"),
                     loginInfo.getString("character"),
-                    loginInfo.getString("password"));
+                    loginInfo.getString("password")); //Logs in
     }
 }
 ```
