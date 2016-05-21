@@ -7,7 +7,7 @@ JFL is a third-party Java library for the online roleplaying website f-list.net,
 
 ##Code Example
 
-The following code is a simple implementation of the FClient class, which reads a JSON file containing the user’s login information, logs into F-chat, and joins the specified private channel when login is successful.
+The following code is a simple implementation of the FClient class that logs into F-chat and joins the specified private channel when login is successful.
 
 ```java
 public class Bot extends FClient {
