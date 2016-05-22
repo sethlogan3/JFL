@@ -6,6 +6,7 @@ import java.util.*;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.*;
+import jfl.FListException;
 import static jfl.Character.*;
 import static jfl.Channel.*;
 
@@ -140,49 +141,49 @@ public abstract class FClient{
         channelDescriptionChanged(channel,description);
     }
     
+
     public void publicChannelsRecieved(ArrayList<Channel> channels) {}
     private void gotCHA(JSONObject param) {
+        publicChannelsRecieved(handleCHAORS(param,Type.PUBLIC));
+    }
+    
+    public void privateChannelsRecieved(ArrayList<Channel> channels) {}
+    private void gotORS(JSONObject param) {
+        publicChannelsRecieved((handleCHAORS(param,Type.PUBLIC)));
+    }
+
+    private ArrayList<Channel> handleCHAORS(JSONObject param,String type) {
         ArrayList<Channel> returnChannels=new ArrayList();
         JSONArray channelsInfo=param.getJSONArray("channels");
         
         for (int i=0; i<channelsInfo.length(); i++) {
             JSONObject current=channelsInfo.getJSONObject(i);
             String name=current.getString("name");
-            String mode=current.getString("mode");
-            int numberOfOccupants=current.getInt("characters");
-            
             Channel channel=getChannel(name);
             
             if (channel==null) {
-                channel=new Channel(name,name,mode,numberOfOccupants);
-                getChannels().add(channel); 
+                channel=new Channel(name,type);
+                addChannel(channel); 
             }
-            else {
-                channel.setMode(mode);
-                channel.setNumberOfOccupants(numberOfOccupants);
-            }
-            
+
+            if (type.equals(Type.PUBLIC)) 
+                channel.setMode(current.getString("mode"));
+            else
+                channel.setTitle(current.getString("title"));
+  
+            channel.setNumberOfOccupants(current.getInt("characters"));      
             returnChannels.add(channel);
-        }  
+        }    
         
-        publicChannelsRecieved(returnChannels);
+        return returnChannels;
     }
     
-    public void inviteRecieved(Character sender,Channel channel) throws Exception {}
+    public void inviteRecieved(Character sender,String channelName,String title) throws Exception {}
     private void gotCIU(JSONObject param) throws Exception {
         String senderName=param.getString("sender");
         String channelName=param.getString("name");
         String title=param.getString("title");
-        Channel channel=getChannel(channelName);
-        
-        if (channel==null) {
-            channel=new Channel(channelName,title);
-            getChannels().add(channel);
-        }
-        else
-            channel.setTitle(title);
-        
-        inviteRecieved(getCharacter(senderName),channel);
+        inviteRecieved(getCharacter(senderName),channelName,title);
     }
     
     public void characterBanned(Character operator,Channel channel,Character bannedCharacter) throws Exception{}
@@ -302,24 +303,23 @@ public abstract class FClient{
     public void characterJoinedChannel(Character character,Channel channel) {}
     private void gotJCH(JSONObject param) throws Exception {
         String characterName=param.getJSONObject("character").getString("identity");
-        Character character=getCharacter(characterName);
-        
         String channelName=param.getString("channel");
+        String title=param.getString("title");
+        
+        Character character=getCharacter(characterName);      
         Channel channel;
 
         if (characterName.equals(clientCharacter)) {
-            getChannels().add(new Channel(channelName,param.getString("title")));
-            channel=getChannel(channelName);
-            
             if (channelName.substring(0,3).equals("ADH"))
-                channel.setType("private");
+                channel=new Channel(channelName,title,Type.PRIVATE);
             else
-                channel.setType("public");
+                channel=new Channel(channelName,title,Type.PUBLIC);
+
+            addChannel(channel);
         } 
         else
             channel=getChannel(channelName);
 
-        channel.addOccupant(character);
         characterJoinedChannel(character,channel);
     }
 
@@ -340,13 +340,10 @@ public abstract class FClient{
     }
     
     public void characterConnected(Character character) {}
-    private void gotNLN(JSONObject param) throws Exception {        
-        Character character=getCharacter(param.getString("identity"));
-        character.setGender(param.getString("gender").toLowerCase());
-        character.setStatus(param.getString("status"));       
-        character.setOnline();   
-        
+    private void gotNLN(JSONObject param) throws Exception {
         serverConnections++;
+        Character character=new Character(param.getString("identity"),param.getString("gender"),param.getString("status"));       
+        addCharacter(character);
         characterConnected(character);
     }
 
@@ -478,24 +475,52 @@ public abstract class FClient{
     public void globalDemote(String character) throws JSONException {
         sendCommand("DOP","character",character);
     }
+      
+    public void searchCharacters(ArrayList kinks,ArrayList<String> genders,ArrayList<String> orientations,
+                                 ArrayList<String> languages,ArrayList<String> furryprefs,ArrayList<String> roles) throws FListException {
+        
+        if (kinks==null || kinks.isEmpty()) 
+            throw new FListException("Kinks field must not be null or empty");
+        else {     
+            JSONObject obj=new JSONObject();
+            String className=kinks.get(0).getClass().getName();
+            ArrayList<String> kinkAsString=new ArrayList();
+            
+            switch (className) {
+                case "java.lang.String":
+                    kinkAsString=kinks;
+                    break;
+                case "java.lang.Integer":
+                    for (Integer integer:(ArrayList<Integer>)kinks) 
+                        kinkAsString.add(String.valueOf(integer));
+                    break;
+                case "jfl.Kink":
+                    for (Kink kink:(ArrayList<Kink>)kinks) 
+                        kinkAsString.add(kink.getIDString());                   
+            }
+
+            obj.put("kinks",FUtil.arrayListToJSON(kinkAsString));
+                                
+            if (genders!=null && !genders.isEmpty()) 
+                obj.put("genders",FUtil.arrayListToJSON(genders));
+
+            if (orientations!=null && !orientations.isEmpty()) 
+                obj.put("orientations",FUtil.arrayListToJSON(orientations));
+
+            if (languages!=null && !languages.isEmpty()) 
+                obj.put("languages",FUtil.arrayListToJSON(languages));
+
+            if (furryprefs!=null && !furryprefs.isEmpty()) 
+                obj.put("furryprefs",FUtil.arrayListToJSON(furryprefs));
+
+            if (roles!=null && !roles.isEmpty()) 
+                obj.put("roles",FUtil.arrayListToJSON(roles));
+
+            send("FKS "+obj);
+        }
+    }
     
-    //Search for characters fitting the user's selections. Kinks is required, all other parameters are optional.
-    public void searchCharacters(Search search) throws Exception {
-        send("FKS "+search);
-    }
-
-    public void searchCharacters(Integer... kinks) throws Exception {
-        send("FKS "+new Search(kinks));
-    }
-
-    public void searchCharacters(String... kinks) throws Exception {
-        send("FKS "+new Search(kinks));
-    }
-        
-    public void searchCharacters(Kink... kinks) throws Exception {
-        send("FKS "+new Search(kinks));
-    }
-        
+    
     //This command is used to identify with the server.
     public void identify(String account,String character,String ticket, String client, String cversion, String method) throws Exception {
         sendCommand("IDN","account",account,"character",character,"ticket",ticket,"client",client,"cversion",cversion,"method",method);

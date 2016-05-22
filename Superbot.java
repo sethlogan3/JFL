@@ -13,18 +13,19 @@ public class Superbot extends FClient{
 
     @Override public void onLogin() throws Exception{
         joinChannel("ADH-491cbcdbbbe8039e87cb");
-        Search search=new Search(getKinkByName("Males"));
-        search.addGenders(Gender.MALE,Gender.FEMALE).addLanguages(Language.ENGLISH);
-        searchCharacters(search);
+        Character character=new Character("Sid the Kid");
+        System.out.println(character.getSexualDetails("cock length (inches)"));
     }
-
+ 
     public static void main(String[] args) throws Exception {
         JSONObject loginInfo=FUtil.loadJSON("data/LoginInfo.json");  
-        Superbot superbot=new Superbot(loginInfo.getString("client name"),
-                                       loginInfo.getString("client version"));
-        superbot.login(loginInfo.getString("username"),
-                       loginInfo.getString("character"),
-                       loginInfo.getString("password"),
-                       Server.TEST);
+        Superbot superbot=new Superbot(
+            loginInfo.getString("client name"),
+            loginInfo.getString("client version"));
+        superbot.login(
+            loginInfo.getString("username"),
+            loginInfo.getString("character"),
+            loginInfo.getString("password"),
+            Server.TEST);
     }
 }

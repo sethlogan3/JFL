@@ -6,7 +6,7 @@ import jfl.FListException;
 
 public class Character extends Logger{
     private static final ArrayList<Character> characters=new ArrayList<>();
-    private String name,status,statusMessage;
+    private String name,status,statusMessage,gender;
     private boolean online,chatop;
 
     private HashMap<String,String> 
@@ -19,10 +19,16 @@ public class Character extends Logger{
 
     private HashMap<Kink,String>kinks=new HashMap();
     
-    public Character(String characterName) {
-        name=characterName;    
+    public Character(String characterName,String characterGender,String characterStatus) throws Exception {
+        name=characterName; 
+        gender=characterGender;
+        status=characterStatus;
     }
 
+    public Character(String characterName) {
+        name=characterName; 
+    }
+    
     public String getName() {
         return name;
     }
@@ -30,21 +36,9 @@ public class Character extends Logger{
     public void setName(String characterName) {
         name=characterName;
     }
-    
-    public void setOnline() {
-        online=true;
-    }
-
-    public void setOffline() {
-        online=false;
-    }
-
-    public void setOnline(boolean state) {
-        online=state;
-    }
         
     public boolean isOnline() {
-        return online;
+        return characters.contains(this);
     }
     
     public void setChatOp() {
@@ -75,7 +69,8 @@ public class Character extends Logger{
         statusMessage=message;
     }
     
-    public void setGender(String characterGender) throws Exception {
+    public final void setGender(String characterGender) throws Exception {
+        gender=characterGender;
         generalDetails.put("gender",characterGender);
     }
     
@@ -215,23 +210,17 @@ public class Character extends Logger{
         return getKinks().get(Kink.getKinkByName(name));
     }
     
+    public static void addCharacter(Character character) {
+        characters.add(character);
+    }
+    
     public static Character getCharacter(String name) throws Exception {               
-        Character character=findCharacterInList(name);
-
-        if (character==null) { 
-            JSONObject profileInfo=EndpointUtil.characterDataPOST("character-get",name);
-            String error=profileInfo.getString("error");
-
-            if (error.equals("Character not found."))
-                throw new FListException(error);
-            else {
-                character=new Character(name);
-                character.profileInfo=FUtil.parseJSONObject(profileInfo.getJSONObject("character"));
-                characters.add(character);
-            }
+        for (Character character:characters) {
+            if (character.getName().equals(name))
+                return character;
         }
         
-        return character;
+        return null;
     }
 
     public static boolean characterExists(String name) throws Exception {
@@ -243,15 +232,7 @@ public class Character extends Logger{
             return false;
         }
     }
-    public static Character findCharacterInList(String name) {
-        for (Character character:characters) {
-            if (character.getName().equals(name))
-                return character;
-        }
-        
-        return null;
-    }
-    
+
     @Override public String toString() {
         return "character:"+name;
     }

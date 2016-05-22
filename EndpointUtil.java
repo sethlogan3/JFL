@@ -41,6 +41,7 @@ public class EndpointUtil {
             out.writeBytes(paramString);
             out.flush();
         }
+        
         System.out.println("POST request sent");
         
         try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
