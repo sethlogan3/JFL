@@ -3,7 +3,7 @@ package jfl.util;
 import java.io.*;
 import java.net.URL;
 import javax.net.ssl.HttpsURLConnection;
-import jfl.components.FClient;
+import jfl.FClient;
 import org.json.JSONObject;
 
 public class EndpointUtil {

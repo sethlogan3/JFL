@@ -14,7 +14,7 @@ public class FChat {
     public ArrayList<Character> characters=new ArrayList(); 
     public ArrayList<Channel> channels=new ArrayList();   
 
-    int serverConnections=0;
+    public int serverConnections=0;
         
     public static class ChannelMode {
         public static final String ADS="ads";

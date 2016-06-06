@@ -1,5 +1,6 @@
-package jfl.components;
+package jfl;
 
+import java.lang.reflect.InvocationTargetException;
 import static jfl.components.FChat.*;
 import static jfl.components.channel.Channel.*;
 import jfl.util.*;
@@ -8,6 +9,12 @@ import jfl.fields.CharacterFields;
 import java.net.*;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.logging.Level;
+import jfl.components.Character;
+import jfl.components.FChat;
+import jfl.components.Kink;
+import jfl.components.Logger;
+import jfl.components.Message;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.*;
@@ -49,6 +56,15 @@ public abstract class FClient {
         Kink.updateKinksList();
     }
 
+        
+    public void setClientName(String name) {
+        client=name;
+    }
+
+    public void setClientVersion(String versionName) {
+        version=versionName;
+    }
+
     private WebSocketClient generateWebsocket(String uri) throws URISyntaxException {
         return new WebSocketClient(new URI(uri)) {
             @Override public void onOpen(ServerHandshake sh) {
@@ -60,7 +76,9 @@ public abstract class FClient {
 
             @Override public void onMessage(String message)  {       
                 JSONObject json=new JSONObject();
-                System.out.println("<< "+message);       
+                System.out.println("<< "+message);
+                
+                FClient.this.onMessage(message);
                 String command=message.substring(0,3);
                 
                 if (message.length()>3)
@@ -81,13 +99,7 @@ public abstract class FClient {
         
         };
     }
-    
-    private void interpretServerCommand(String command,JSONObject param) throws Exception{
-        String methodName="got"+command;
-        Method m=FClient.class.getDeclaredMethod(methodName,new Class[]{JSONObject.class});
-        m.invoke(this,param);    
-    }
-    
+
     public void login(String username,String character,String password,Server server) throws Exception {
         user=username;
         clientCharacter=character;
@@ -104,14 +116,6 @@ public abstract class FClient {
     public void login(String username,String character,String password) throws Exception {
         login(username,character,password,Server.PUBLIC);
     }
-    
-    public void setClientName(String name) {
-        client=name;
-    }
-
-    public void setClientVersion(String versionName) {
-        version=versionName;
-    }
 
     public void send(String message) {
         System.out.println(">> "+message);
@@ -127,6 +131,19 @@ public abstract class FClient {
         send(command+" "+info.toString());
     }
 
+    private void interpretServerCommand(String command,JSONObject param) throws FListException {
+        try {
+            String methodName="got"+command;
+            Method m=FClient.class.getDeclaredMethod(methodName,new Class[]{JSONObject.class});   
+            m.invoke(this,param);
+        }catch(Exception e) {
+            throw new FListException("Command not currently implemented or unable to invoke.");
+        }
+    }
+    
+    public void onMessage(String command,JSONObject param) {}
+    public void onMessage(String message) {}
+    
     public void chatopsRecieved(ArrayList<String> opNames) {}
     private void gotADL(JSONObject param) {
         JSONArray opNames=param.getJSONArray("ops");
