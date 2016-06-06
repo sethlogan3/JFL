@@ -1,7 +1,7 @@
 # JFL - Java Flist Library
 
 ## Overview
-*Note: JFL is still in development as of May 2016. Code will remain incomplete and will likely contain errors until this header is removed.*
+*Note: JFL is still in development as of June 2016. Code will remain incomplete and will likely contain errors until this header is removed.*
 
 JFL is an open source third-party Java library for the online roleplaying website f-list.net, offering features for easy implementation of clients and bots for F-chat, and general access of API endpoint data.
 
@@ -41,19 +41,19 @@ public class Bot extends FClient {
 
 ####F-chat communication
 * Handles all websocket communication 
-* Handles client-server JSON commands and formatting. Every command has a corresponding method.
+* Handles client-server JSON commands and formatting. Every command has a corresponding method or set of methods.
  * User can implement methods that are called for incoming server commands
  * User can invoke methods for any outgoing client commands
 
 ####F-chat data tracking
 * Tracks server variables
 * Tracks and logs PMs and channel messages
-* Tracks data for all characters that enter f-chat including gender, status, status message, and any data received from the server or requested from the API
+* Tracks data for all characters that enter f-chat including gender, status, status message, and any character information received from the server or requested from the API
 * Tracks data for all channels that the client enters, including names/titles, chanops, channel settings, and a list of characters occupying each room
 
 ####Additional features
-* Parses and provides methods to retrieves information received from SYS commands, particularly those that are sent in response to client commands with no unique response command (RST, CIU, CBL, COL, and CUB).
-
+* Provides methods for retrieving information parsed from SYS commands, particularly those that are sent in response to client commands with no unique server response (RST, CIU, CBL, COL, and CUB).
+* Handles server commands that come in batches by tracking their data as the commands are received and only calling the appropriate method(s) on the final 'end' command
 
 ##Additional Resources
 [F-chat server commands](https://wiki.f-list.net/F-Chat_Server_Commands)
