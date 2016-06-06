@@ -31,7 +31,7 @@ public class Bot extends FClient {
 
 ##Dependencies 
 
-JFL relies on [org.java_websocket copyright (c) 2010-2012 Nathan Rajlich](https://github.com/TooTallNate/Java-WebSocket) for websocket communication and [org.json](https://github.com/stleary/JSON-java) for JSON object manipulation. Both precompiled libraries have been included in the org package.
+JFL relies on [org.java_websocket](https://github.com/TooTallNate/Java-WebSocket) copyright (c) 2010-2012 Nathan Rajlich for websocket communication and [org.json](https://github.com/stleary/JSON-java) for JSON object manipulation. Both precompiled libraries have been included in the org package.
   
 ##Features 
 
