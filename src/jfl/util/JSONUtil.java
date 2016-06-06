@@ -1,30 +1,35 @@
-package jfl;
+package jfl.util;
 
 import java.io.*;
 import java.util.*;
 import org.json.*;
 
-public class FUtil {
-    public static String formatAsEnum(String str) {
-        String replaced=str.replaceAll(" ","_").replaceAll("-","_").replace("/","_").replace("(","").replace(")","");
-        return replaced.trim().toUpperCase();
-    } 
-    
-    public static Enum getEnum(String str,Enum[] en) {
-        for(Enum e : en) {
-            if (FUtil.formatAsEnum(str).equals(e.toString()))
-                return e;
-        }
-        
-        return null;
-    }
+public class JSONUtil {
     
     public static JSONObject loadJSON(String filename) throws FileNotFoundException {
         Scanner s=new Scanner(new File(filename));
         String content = s.useDelimiter("\\Z").next();
         return new JSONObject(content);
     }
-    
+
+    public static int[] jsonToIntArray(JSONArray array) {
+        int[] intArray=new int[array.length()];
+        
+        for (int i=0; i<array.length(); i++)
+            intArray[i]=array.getInt(i);
+        
+        return intArray;
+    }
+
+    public static String[] jsonToStringArray(JSONArray array) {
+        String[] stringArray=new String[array.length()];
+
+        for (int i=0; i<array.length(); i++)
+            stringArray[i]=array.getString(i);
+        
+        return stringArray;
+    }
+        
     public static ArrayList<String> jsonToArrayList(JSONArray array) {
         ArrayList<String> arrayList=new ArrayList();
         

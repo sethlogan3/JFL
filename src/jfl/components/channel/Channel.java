@@ -1,67 +1,27 @@
-package jfl;
+package jfl.components.channel;
 
 import java.util.*;
+import jfl.components.Character;
 import org.json.JSONObject;
 
-public class Channel extends Logger{
-    public static class Mode {
-        public static final String ADS="ads";
-        public static final String CHAT="chat";
-        public static final String BOTH="both";
+public class Channel { 
+    public static class ChannelStatus {
+        public static String PUBLIC="public";
+        public static String PRIVATE="private";
     }
-
-    public static class Type {
-        public static final String PUBLIC="public";
-        public static final String PRIVATE="private";
-    }
-    
-    private static ArrayList<Channel> channels=new ArrayList();
-    
-    public static ArrayList<Channel> getChannels() {
-        return channels;
-    }
-    
-    public static Channel getChannel(String name) {
-        for (Channel channel:channels) {
-            if (channel.getName().equals(name))
-                return channel;
-        }
-        
-        return null;
-    }
-    
-    public static ArrayList<Channel> addChannel(Channel channel) {
-        channels.add(channel);
-        return channels;
-    }
-    
-    public static ArrayList<Channel> removeChannel(String name) {
-        for (Channel channel:channels) {
-            if (channel.getName().equals(name))
-                channels.remove(channel);
-        }
-        
-        return channels;
-    }
-    
-    
-    //////////
-    
     
     private String name,title,description,mode,type;
-    private Character owner;
-    private int numberOfOccupants;
+    private String owner;
     
     private ArrayList<Character> occupants=new ArrayList();
-    private ArrayList<Character> ops=new ArrayList();
+    private ArrayList<String> ops=new ArrayList();
+    private ArrayList<String> bannedCharacters=new ArrayList();
     
-
-
-   // public Channel(String channelName,String channelTitle, String channelType) {
-   //     name=channelName;
-   //     title=channelTitle;
-   //     type=channelType;
-   // }
+    public Channel(String channelName,String channelTitle, String channelType) {
+        name=channelName;
+        title=channelTitle;
+        type=channelType;
+    }
     
     public Channel(String channelName,String channelType) {
         name=channelName;
@@ -69,11 +29,11 @@ public class Channel extends Logger{
     }
 
         
-    public Character getOwner() {
+    public String getOwner() {
         return owner;
     }
 
-    public void setOwner(Character newOwner) {
+    public void setOwner(String newOwner) {
         owner=newOwner;
     }
         
@@ -101,14 +61,6 @@ public class Channel extends Logger{
         description=channelDescription;
     }
 
-    public int getNumberOfOccupants() {
-        return numberOfOccupants;
-    }
-    
-    public void setNumberOfOccupants(int num) {
-        numberOfOccupants=num;
-    }
-    
     public String getMode() {
         return mode;
     }
@@ -125,10 +77,6 @@ public class Channel extends Logger{
         type=channelType;
     }
 
-    
-    //////////
-    
-    
     public ArrayList<Character> getOccupants() {
         return occupants;    
     }
@@ -155,23 +103,31 @@ public class Channel extends Logger{
         occupants.remove(occupant);
     }
 
+    public void removeOccupant(String occupantName) {
+        for (Character occupant:occupants) {
+            if (occupant.getName().equals(occupantName)) 
+                occupants.remove(occupant);
+        }
+    }
+    
     public void clearOccupants() {
         occupants.clear();
     }
 
-    public ArrayList<Character> getOps() {
+    public ArrayList<String> getOps() {
         return ops;
     }
         
-    public void setOps(ArrayList<Character> newOps) {
+    public void setOps(ArrayList<String> newOps) {
+        owner=newOps.get(0);
         ops=newOps;
     }
 
-    public void addOp(Character op) {
+    public void addOp(String op) {
         ops.add(op);
     }
 
-    public void removeOp(Character op) {
+    public void removeOp(String op) {
         ops.remove(op);
     }
 
@@ -183,6 +139,10 @@ public class Channel extends Logger{
         
         return false;
     }
+
+    public int getNumberOfOccupants() {
+        return occupants.size();
+    }
     
     public JSONObject toJSON() {
         JSONObject obj=new JSONObject();
@@ -192,8 +152,8 @@ public class Channel extends Logger{
         obj.put("name",name);
         obj.put("mode",mode);
         obj.put("type",type);
-        obj.put("owner",owner.getName());
-        obj.put("occupants",numberOfOccupants);
+        obj.put("owner",owner);
+        obj.put("occupants",occupants.size());
         return obj;
     }
 

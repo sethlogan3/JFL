@@ -1,4 +1,4 @@
-package jfl;
+package jfl.util;
 
 public class FListException extends Exception{
     String message;

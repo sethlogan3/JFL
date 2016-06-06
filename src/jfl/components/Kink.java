@@ -1,10 +1,11 @@
-package jfl;
+package jfl.components;
 
 import java.util.*;
+import jfl.util.EndpointUtil;
 import org.json.*;
 
 public class Kink {
-    public static ArrayList<Kink> kinksList=new ArrayList<>();
+    public static ArrayList<Kink> kinksList=new ArrayList(); 
     public String name,category;
     public int id;
     
@@ -41,11 +42,7 @@ public class Kink {
         
         return returnObject;
     }
-    
-    @Override public String toString() {
-        return kinkToJSON().toString();
-    }
-    
+ 
     public static ArrayList<Kink> getKinksList() {
         return kinksList;
     }
@@ -94,5 +91,8 @@ public class Kink {
         }
         
         return null;        
+    }
+    @Override public String toString() {
+        return kinkToJSON().toString();
     }
 }

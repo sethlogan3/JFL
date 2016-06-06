@@ -1,13 +1,16 @@
-package jfl;
+package jfl.components;
 
 import java.util.*;
+import jfl.util.EndpointUtil;
 import org.json.*;
-import jfl.FListException;
+import jfl.util.FListException;
+import jfl.util.JSONUtil;
 
-public class Character extends Logger{
-    private static final ArrayList<Character> characters=new ArrayList<>();
-    private String name,status,statusMessage,gender;
-    private boolean online,chatop;
+public class Character {
+    public String name,status,statusMessage,gender;
+    public boolean chatop;
+
+    private HashMap<Kink,String>kinks=new HashMap();
 
     private HashMap<String,String> 
         contactDetails=new HashMap(),
@@ -16,15 +19,13 @@ public class Character extends Logger{
         rpingPreferences=new HashMap(),
         profileInfo=new HashMap(),
         customKinks=new HashMap();
-
-    private HashMap<Kink,String>kinks=new HashMap();
     
     public Character(String characterName,String characterGender,String characterStatus) throws Exception {
         name=characterName; 
         gender=characterGender;
         status=characterStatus;
     }
-
+        
     public Character(String characterName) {
         name=characterName; 
     }
@@ -36,17 +37,13 @@ public class Character extends Logger{
     public void setName(String characterName) {
         name=characterName;
     }
-        
-    public boolean isOnline() {
-        return characters.contains(this);
-    }
     
     public void setChatOp() {
         chatop=true;
     }
  
-    public void setChatOp(boolean state) {
-        chatop=state;
+    public void setChatOp(boolean bool) {
+        chatop=bool;
     }
     
     public boolean isChatOp() {
@@ -80,7 +77,25 @@ public class Character extends Logger{
         
         return contactDetails;
     }
+
+    public String getContactDetail(String key) throws Exception {
+        if (!contactDetails.containsKey(key))
+           updateCharacterInfo();
+
+        return contactDetails.get(key);
+    }
+
+    public void toSomething() {
+        
+    }
+    public void setContactDetails(HashMap<String,String> details) throws Exception {
+        contactDetails=details;
+    }
  
+    public void setContactDetail(String key,String value) throws Exception {
+        contactDetails.put(key,value);
+    }
+        
     public HashMap<String,String> getSexualDetails() throws Exception {
         if (sexualDetails.isEmpty())
             updateCharacterInfo();
@@ -88,8 +103,19 @@ public class Character extends Logger{
         return sexualDetails;
     }
 
-    public String getSexualDetails(String key) throws Exception {
-        return getSexualDetails().get(key);
+    public String getSexualDetail(String key) throws Exception {
+        if (!sexualDetails.containsKey(key))
+           updateCharacterInfo();
+
+        return sexualDetails.get(key);
+    }
+
+    public void setSexualDetails(HashMap<String,String> details) throws Exception {
+        sexualDetails=details;
+    }
+
+    public void setSexualDetail(String key,String value) throws Exception {
+        sexualDetails.put(key,value);
     }
     
     public HashMap<String,String> getGeneralDetails() throws Exception {
@@ -99,8 +125,19 @@ public class Character extends Logger{
         return generalDetails;
     }
  
-    public String getGeneralDetails(String key) throws Exception {
-        return getGeneralDetails().get(key);
+    public String getGeneralDetail(String key) throws Exception {
+        if (!generalDetails.containsKey(key))
+           updateCharacterInfo();
+
+        return generalDetails.get(key);
+    }
+    
+    public void setGeneralDetails(HashMap<String,String> details) throws Exception {
+        generalDetails=details;
+    }
+
+    public void setGeneralDetail(String key,String value) throws Exception {
+        generalDetails.put(key,value);
     }
     
     public HashMap<String,String> getRPingPreferences() throws Exception {
@@ -110,10 +147,21 @@ public class Character extends Logger{
         return rpingPreferences;
     }
 
-    public String getRPingPreferences(String key) throws Exception {
-        return getRPingPreferences().get(key);
+    public String getRPingPreference(String key) throws Exception {
+        if (!rpingPreferences.containsKey(key))
+           updateCharacterInfo();
+
+        return rpingPreferences.get(key);
     }
-        
+    
+    public void setRPingPreferences(HashMap<String,String> preferences) throws Exception {
+        rpingPreferences=preferences;
+    }
+
+    public void setRPingPreference(String key,String value) throws Exception {
+        rpingPreferences.put(key,value);
+    }
+    
     public HashMap<String,String> getProfileInfo() throws Exception {
         if (profileInfo.isEmpty())
             updateProfileInfo();
@@ -127,7 +175,7 @@ public class Character extends Logger{
      
     public HashMap<Kink,String> getKinks() throws Exception {
         if (kinks.isEmpty())
-            updateKinks(); 
+            updateKinksFromAPI(); 
 
         return kinks;
     }
@@ -153,8 +201,24 @@ public class Character extends Logger{
         
         return customKinks;
     }
-        
-    public void updateKinks() throws Exception {
+      
+    public void setCustomKinks(HashMap<String,String> kinks) throws Exception {
+        customKinks=kinks;
+    }
+
+    public void setCustomKink(String key,String value) throws Exception {
+        customKinks.put(key, value);
+    }
+    
+    public void clearCustomKinks() {
+        customKinks.clear();
+    }
+    
+    public void addCustomKink(String key, String value) {
+        customKinks.put(key,value);
+    }
+    
+    public HashMap<Kink,String> updateKinksFromAPI() throws Exception {
         JSONObject obj=EndpointUtil.characterDataPOST("character-kinks",name).getJSONObject("kinks");
         Iterator keys = obj.keys();
 
@@ -169,25 +233,30 @@ public class Character extends Logger{
                 kinks.put(kink,choice);
             }
         }
+        
+        return kinks;
     }
     
-    public void updateCustomKinks() throws Exception {
+    public HashMap<String,String> updateCustomKinks() throws Exception {
         JSONArray array=EndpointUtil.characterDataPOST("character-customkinks",name).getJSONArray("kinks");
         customKinks=parseJSONArray(array,"description");
+        return customKinks;
     }    
     
-    public void updateProfileInfo() throws Exception {
+    public HashMap<String,String> updateProfileInfo() throws Exception {
         JSONObject param=EndpointUtil.characterDataPOST("character-get",name);
-        profileInfo=FUtil.parseJSONObject(param.getJSONObject("character"));
+        profileInfo=JSONUtil.parseJSONObject(param.getJSONObject("character"));
+        return profileInfo;
     }
     
-    public void updateCharacterInfo() throws Exception {    
+    public HashMap<String,String>[] updateCharacterInfo() throws Exception {    
         JSONObject param=EndpointUtil.characterDataPOST("character-info",name).getJSONObject("info");
                         
         contactDetails=parseJSONArray(param.getJSONObject("1").getJSONArray("items"),"value");
         sexualDetails=parseJSONArray(param.getJSONObject("2").getJSONArray("items"),"value");
         generalDetails=parseJSONArray(param.getJSONObject("3").getJSONArray("items"),"value");
         rpingPreferences=parseJSONArray(param.getJSONObject("5").getJSONArray("items"),"value");
+        return new HashMap[]{contactDetails,sexualDetails,generalDetails,rpingPreferences};
     }
     
     private static HashMap parseJSONArray(JSONArray array,String value) {
@@ -196,7 +265,7 @@ public class Character extends Logger{
 
         for (int i=0; i<array.length(); i++) {
             obj=array.getJSONObject(i);
-            hashMap.put(obj.getString("name").toLowerCase(),obj.getString(value));
+            hashMap.put(obj.getString("name"),obj.getString(value));
         }
         
         return hashMap;
@@ -210,91 +279,8 @@ public class Character extends Logger{
         return getKinks().get(Kink.getKinkByName(name));
     }
     
-    public static void addCharacter(Character character) {
-        characters.add(character);
-    }
-    
-    public static Character getCharacter(String name) throws Exception {               
-        for (Character character:characters) {
-            if (character.getName().equals(name))
-                return character;
-        }
-        
-        return null;
-    }
-
-    public static boolean characterExists(String name) throws Exception {
-        try {
-            getCharacter(name);
-            return true;
-        }
-        catch(FListException fe) {
-            return false;
-        }
-    }
-
     @Override public String toString() {
         return "character:"+name;
     }
-    
-    public static class Gender {
-        public static final String 
-            MALE="Male",
-            FEMALE="Female",
-            TRANSGENDER="Transgender",
-            HERM="Herm",
-            SHEMALE="Shemale",
-            MALE_HERM="Male-Herm",
-            CUNT_BOY="Cunt-boy",
-            NONE="None";
-    }
-    
-    public static class Role {
-        public static final String 
-            ALWAYS_SUBMISSIVE="Always submissive",
-            USUALLY_SUBMISSIVE="Usually submissive",
-            SWITCH="Switch",
-            USUALLY_DOMINANT="Usually dominant",
-            ALWAYS_DOMINANT="Always dominant";
-    }
-    
-    public static class Orientation {
-        public static final String 
-            STRAIGHT="Straight",
-            GAY="Gay",
-            BISEXUAL="Bisexual",
-            ASEXUAL="Asexual",
-            UNSURE="Unsure",
-            BI_MALE_PREF="Bi - male preference",
-            BI_FEMALE_PREF="Bi - female preference",
-            PANSEXUAL="pansexual",
-            BI_CURIOUS="Bi-curious";
-    }
-    
-    public static class Position {
-        public static final String 
-            ALWAYS_BOTTOM="Always Bottom",
-            USUALLY_BOTTOM="Usually Bottom",
-            SWITCH="Switch",
-            USUALLY_TOP="Usually Top",
-            ALWAYS_TOP="Always Top";
-    }
-    
-    public static class Language {
-        public static final String
-            ARABIC="Arabic",
-            CHINESE="Chinese",
-            DUTCH="Dutch",
-            ENGLISH="English",
-            FRENCH="French",
-            GERMAN="German",
-            ITALIAN="Italian",
-            JAPANESE="Japanese",
-            KOREAN="Korean",
-            PORTUGUESE="Portuguese",
-            RUSSIAN="Russian",
-            SPANISH="Spanish",
-            SWEDISH="Swedish",
-            OTHER="Other";
-    }
+   
 }

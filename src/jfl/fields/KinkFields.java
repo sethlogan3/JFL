@@ -1,6 +1,6 @@
-package jfl;
+package jfl.fields;
 
-public class KinkNames {
+public class KinkFields {
     public static final String 
         THREE_PENETRATION="3+ Penetration",
         ABRASIONS="Abrasions",

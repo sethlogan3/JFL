@@ -1,13 +1,16 @@
-package jfl;
+package jfl.util;
 
 import java.io.*;
 import java.net.URL;
 import javax.net.ssl.HttpsURLConnection;
+import jfl.components.FClient;
 import org.json.JSONObject;
 
 public class EndpointUtil {
     public static final String TICKET_URL="https://www.f-list.net/json/getApiTicket.php";
     public static final String API_URL="https://www.f-list.net/json/api/";
+  
+    public static final String USER_AGENT=FClient.CLIENT_DEFAULT+" "+FClient.VERSION_DEFAULT+": Contact Slogan on F-list for issues or inquiries.";
     public static String ticket="",user;
     
     public static String getTicket(String username,String password) throws Exception {
@@ -34,6 +37,8 @@ public class EndpointUtil {
     public static JSONObject postRequest(String url,String paramString) throws Exception{
         String newLine,response="";
         HttpsURLConnection connection = (HttpsURLConnection) new URL(url).openConnection();
+        
+        connection.setRequestProperty("User-Agent",USER_AGENT);
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
 
