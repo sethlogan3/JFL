@@ -45,11 +45,14 @@ public class Bot extends FClient {
  * User can implement methods that are called for incoming server commands
  * User can invoke methods for any outgoing client commands
 
-
 ####F-chat data tracking
+* Tracks server variables
 * Tracks and logs PMs and channel messages
-* Tracks data for all characters that enter f-chat (as well as any character that the user specifies) including gender, status, status message, and any character data pulled from searches or requested from the API
+* Tracks data for all characters that enter f-chat including gender, status, status message, and any data received from the server or requested from the API
 * Tracks data for all channels that the client enters, including names/titles, chanops, channel settings, and a list of characters occupying each room
+
+####Additional features
+* Parses and provides methods to retrieves information received from SYS commands, particularly those that are sent in response to client commands with no unique response command (RST, CIU, CBL, COL, and CUB).
 
 
 ##Additional Resources
